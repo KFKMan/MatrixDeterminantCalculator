@@ -10,7 +10,7 @@
 ///1 for Laplace Expansion
 ///2 for Leibniz Formula
 ///3 for Gaussian Elimination
-#define DETERMINANT_ALG 2
+#define DETERMINANT_ALG 1
 
 ///0 for False
 ///1 for True
@@ -25,7 +25,8 @@
 #else
 double fabs(double x)
 {
-	if(x < 0){
+	if(x < 0)
+	{
 		return -x;
 	}
 	return x;
@@ -119,10 +120,13 @@ void PrintMatrix(VALUE_TYPE* matrix, COUNTER_TYPE row, COUNTER_TYPE column)
 	COUNTER_TYPE _row, _column; //Pre-initialize for variables because before C99 you can't use for initializers
     for(_row = 0; _row < row; ++_row)
 	{
+		printf("| ");
 		for(_column = 0; _column < column; ++_column)
 		{
 			printf(VALUE_TYPE_SPECIFIER,matrix[CalculateIndex(_row,column,_column)]);
+			printf(" | ");
 		}
+		printf("\n");
 	}
 }
 
@@ -264,9 +268,6 @@ void GeneratePermutations(COUNTER_TYPE* perm, COUNTER_TYPE* used, COUNTER_TYPE n
         }
         *determinant += PermutationSign(currentPerm, n) * product;
 
-		// Freeing currentPerm
-		free(currentPerm);
-		currentPerm = NULL;
         return;
     }
 
@@ -286,6 +287,12 @@ void GeneratePermutations(COUNTER_TYPE* perm, COUNTER_TYPE* used, COUNTER_TYPE n
             used[i] = 0;
         }
     }
+
+	if(depth == 0){
+		// Freeing currentPerm
+		free(currentPerm);
+		currentPerm = NULL;
+	}
 }
 
 /// @brief Calculating Determinant of Rectangle Matrixes
@@ -334,6 +341,7 @@ void SwapRows(VALUE_TYPE* matrix, COUNTER_TYPE size, COUNTER_TYPE row1, COUNTER_
 VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size) 
 {
     VALUE_TYPE* determinant = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE));
+	*determinant = 1;
     VALUE_TYPE* tempMatrix = (VALUE_TYPE*)malloc(size * size * sizeof(VALUE_TYPE));
 
     // Copying original matrix
@@ -361,13 +369,15 @@ VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size)
             *determinant *= -1; // Changing row will change sign
         }
 
+		/*
 		// If main element is zero determinant is zero
-        if (tempMatrix[k * size + k] == 0.0) 
+        if (tempMatrix[k * size + k] == 0) 
 		{
             free(tempMatrix);
 			*determinant = 0;
             return determinant;
         }
+		*/
 
         // Update sub rows
         for (i = k + 1; i < size; i++) 
@@ -384,7 +394,10 @@ VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size)
     // Main Diagonal Product - Determinant
     for (i = 0; i < size; i++) 
 	{
-        *determinant *= tempMatrix[i * size + i];
+		if(tempMatrix[i * size + i] != 0)
+		{
+        	*determinant *= tempMatrix[i * size + i];
+		}
     }
 
     free(tempMatrix);
