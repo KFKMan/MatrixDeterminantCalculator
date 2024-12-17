@@ -1,3 +1,5 @@
+#define NewLineSpecifier "\n"
+
 ///scanf_s has a increased security for characters/strings/arrays.
 ///We don't use scanf for characters/strings/arrays so it's really don't matter.
 #define USE_SCANF_S
@@ -15,6 +17,12 @@
 ///0 for False
 ///1 for True
 #define USE_MATH_LIB_FOR_GAUSSIAN 1
+
+#define USE_STOPWATCH 1
+
+#if USE_STOPWATCH == 1
+#include <time.h>
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -126,7 +134,7 @@ void PrintMatrix(VALUE_TYPE* matrix, COUNTER_TYPE row, COUNTER_TYPE column)
 			printf(VALUE_TYPE_SPECIFIER,matrix[CalculateIndex(_row,column,_column)]);
 			printf(" | ");
 		}
-		printf("\n");
+		printf(NewLineSpecifier);
 	}
 }
 
@@ -410,12 +418,14 @@ VALUE_TYPE* DeterminateMatrix(VALUE_TYPE* matrix, COUNTER_TYPE row, COUNTER_TYPE
 	if(row != column)
 	{
 		printf("Only rectangle matrixes (like 2x2, 3x3, 4x4, NxN) can be calculated.");
+		printf(NewLineSpecifier);
 		return NULL;
 	}
 
 	if(row <= 0)
 	{
 		printf("Matrix can't have negative size.");
+		printf(NewLineSpecifier);
 		return NULL;
 	}
 
@@ -445,19 +455,29 @@ int main()
 		
 		PrintMatrix(matrix, row, column);
 		
+		#if USE_STOPWATCH == 1
+		clock_t start = clock();
+		#endif
 		VALUE_TYPE* determinant = DeterminateMatrix(matrix, row, column);
-		
+		#if USE_STOPWATCH == 1
+		clock_t stop = clock();
+		long miliseconds = stop-start;
+		printf("Calculated in %ld ms", miliseconds);
+		printf(NewLineSpecifier);
+		#endif
+
 		free(matrix); //We don't need it more
 
 		if(determinant == NULL)
 		{
 			printf("Matrix Determinant Calculation not finished succesfully, error accoured");
+			printf(NewLineSpecifier);
 			continue;
 		}
 
 		printf("Determinant of the matrix is ");
 		printf(VALUE_TYPE_SPECIFIER, *determinant);
-		printf("\n");
+		printf(NewLineSpecifier);
 
 		free(determinant); //We don't need it more
 	}
