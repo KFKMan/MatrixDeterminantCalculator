@@ -4,15 +4,15 @@
 ///We don't use scanf for characters/strings/arrays so it's really don't matter.
 #define USE_SCANF_S
 
-#define VALUE_TYPE int
-#define VALUE_TYPE_SPECIFIER "%d"
+#define VALUE_TYPE double
+#define VALUE_TYPE_SPECIFIER "%lf"
 #define COUNTER_TYPE int
 #define COUNTER_TYPE_SPECIFIER "%d"
 
 ///1 for Laplace Expansion
 ///2 for Leibniz Formula
-///3 for Gaussian Elimination
-#define DETERMINANT_ALG 1
+///3 for Gaussian Elimination (there is a divide operation because of that you need to use floating types like double, float etc.)
+#define DETERMINANT_ALG 2
 
 ///0 for False
 ///1 for True
@@ -26,6 +26,24 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+const int Algorithm = DETERMINANT_ALG;
+
+void PrintAlgorithm(){
+	if(Algorithm == 1){
+		printf("Selected Algorithm is Laplace Expansion \n");
+	}
+	else if(Algorithm == 2){
+		printf("Selected Algorithm is Leibniz Formula \n");
+	}
+	else if (Algorithm == 3)
+	{
+		printf("Selected Algorithm is Gaussian Elimination \n");
+	}
+	else{
+		printf("Unknow Algorithm Detected \n");
+	}
+}
 
 #if DETERMINANT_ALG == 3
 #if USE_MATH_LIB_FOR_GAUSSIAN == 1
@@ -142,8 +160,8 @@ void PrintMatrix(VALUE_TYPE* matrix, COUNTER_TYPE row, COUNTER_TYPE column)
 /// @param matrix Main Matrix
 /// @param subMatrix Allocated Sub Matrix which wanted too filled up
 /// @param size Size Of The Matrix
-/// @param excludeRow Excluded Row
-/// @param excludeCol Excluded Column
+/// @param excludeRow Excluded Row (from 0)
+/// @param excludeCol Excluded Column (from 0)
 void GetSubMatrix(VALUE_TYPE* matrix, VALUE_TYPE* subMatrix, COUNTER_TYPE size, COUNTER_TYPE excludeRow, COUNTER_TYPE excludeCol) 
 {
     COUNTER_TYPE NewSize = size - 1;
@@ -179,16 +197,21 @@ void GetSubMatrix(VALUE_TYPE* matrix, VALUE_TYPE* subMatrix, COUNTER_TYPE size, 
 /// @return Determinant of Matrix (it's scalar) as Pointer or NULL if error accoured
 VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size)
 {	
-	//Determinant of the 1x1 matrix is equal to itself
-	if (size == 1) 
-	{
-        return &matrix[0]; 
-    }
-
 	//We allocate it because we want to return it's pointer
 	//If we don't allocate it, it will be removed from stack in function end
 	//And when we try to access this pointer from other wheres it will be throw error
 	VALUE_TYPE* determinant = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE));
+	if(!determinant){
+		return NULL;
+	}
+	*determinant = 0;
+
+	//Determinant of the 1x1 matrix is equal to itself
+	if (size == 1) 
+	{
+		*determinant = matrix[0];
+		return determinant;
+    }
 
 	//2x2 Matrix Determinant
 	//Actually we don't need this condition, for loop can process 2x2 Matrixes too
@@ -200,6 +223,9 @@ VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size)
 
     
     VALUE_TYPE* subMatrix = (VALUE_TYPE*)malloc((size - 1) * (size - 1) * sizeof(VALUE_TYPE));
+	if(!subMatrix){
+		return NULL;
+	}
 
 	COUNTER_TYPE col; //Pre-initialize for variables because before C99 you can't use for initializers
     for (col = 0; col < size; col++) 
@@ -219,88 +245,47 @@ VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size)
     return determinant;
 }
 #elif DETERMINANT_ALG == 2
-/// @brief Determines the sign of a permutation by counting the number of inversions. An inversion occurs when a pair of indices (i, j) satisfies i < j and perm[i] > perm[j]
-/// @param perm Pointer to an array representing the permutation
-/// @param n The size of the permutation (number of elements)
-/// @return Returns 1 if the number of inversions is even (even permutation), or -1 if the number of inversions is odd (odd permutation)
-COUNTER_TYPE PermutationSign(COUNTER_TYPE* perm, COUNTER_TYPE n) 
-{
-    COUNTER_TYPE inversions = 0;
 
-	// Count the number of inversions
-	COUNTER_TYPE i; //Pre-initialize for variables because before C99 you can't use for initializers
-    for (i = 0; i < n; i++) 
-	{
-		COUNTER_TYPE j; //Pre-initialize for variables because before C99 you can't use for initializers
-        for (j = i + 1; j < n; j++) 
-		{
-            if (perm[i] > perm[j]) 
-			{
+/// @brief Get Sign of Permutation
+/// @param perm Array (n=size) for storing permutations
+/// @param size Size of the Matrix for example 1 for 1x1, 2 for 2x2, 3 for 3x3 etc.
+/// @return Sign of Permutation, if even +1 else -1
+int signOfPermutation(COUNTER_TYPE *perm, int size) {
+    int inversions = 0;
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = i + 1; j < size; j++) {
+            if (perm[i] > perm[j]) {
                 inversions++;
             }
         }
     }
-
-	// Return the sign: 1 for even inversions, -1 for odd inversions
     return (inversions % 2 == 0) ? 1 : -1;
 }
 
-/// @brief Generates all permutations of row indices recursively and computes the determinant of an n x n matrix using the Leibniz formula
-/// @param perm Pointer to an array of row indices to be permuted
-/// @param used Pointer to an array that tracks whether a row index has been used
-/// @param n The dimension of the square matrix (number of rows/columns)
-/// @param depth The current depth of recursion (index position being filled)
-/// @param matrix Pointer to the n x n matrix elements stored in a 1D array (row-major order)
-/// @param determinant Pointer to a variable that accumulates the determinant value
-void GeneratePermutations(COUNTER_TYPE* perm, COUNTER_TYPE* used, COUNTER_TYPE n, COUNTER_TYPE depth, VALUE_TYPE* matrix, VALUE_TYPE* determinant) 
-{
-    // Static variable to store the current permutation
-	static COUNTER_TYPE* currentPerm = NULL;
-
-	// On first call (non recrusive call) allocate currentPerm
-	if(depth == 0)
-	{
-		//It will be NULL because it's NULL before call and freed after every completed call
-		currentPerm = (COUNTER_TYPE*)malloc(n * sizeof(COUNTER_TYPE));
-	}
-
-	COUNTER_TYPE i; //Pre-initialize for variables because before C99 you can't use for initializers
-
-	// Base case: If the permutation is complete
-    if (depth == n) 
-	{
-        VALUE_TYPE product = 1;
-        for (i = 0; i < n; i++) 
-		{
-            product *= matrix[i * n + currentPerm[i]];
+/// @brief Create Permutations and Calculate Determinant with them
+/// @param matrix Matrix which is a VALUE_TYPE Array as pointer
+/// @param perm Array (n=size) for storing permutations
+/// @param used Array (n=size) with for determining used or not, use calc or fill it with zeros
+/// @param depth It's for recursing set it zero
+/// @param size Size of the Matrix for example 1 for 1x1, 2 for 2x2, 3 for 3x3 etc.
+/// @param det For setting determinant value
+void permute(VALUE_TYPE *matrix, COUNTER_TYPE *perm, COUNTER_TYPE *used, COUNTER_TYPE depth, COUNTER_TYPE size, VALUE_TYPE *det) {
+    if (depth == size) {
+        int product = 1;
+        for (int i = 0; i < size; i++) {
+            product *= matrix[i * size + perm[i]];
         }
-        *determinant += PermutationSign(currentPerm, n) * product;
-
-        return;
-    }
-
-	// Recursive case: Generate permutations
-    for (i = 0; i < n; i++) 
-	{
-        // Check if the index has not been used yet
-		if (!used[i]) 
-		{
-            // Mark the index as used
-			used[i] = 1; 
-			// Add the current index to the permutation
-            currentPerm[depth] = perm[i];
-			// Recurse to fill the next position
-            GeneratePermutations(perm, used, n, depth + 1, matrix, determinant);
-			// Backtrack: Mark the index as unused
-            used[i] = 0;
+        *det += signOfPermutation(perm, size) * product;
+    } else {
+        for (int i = 0; i < size; i++) {
+            if (!used[i]) {
+                used[i] = 1;
+                perm[depth] = i;
+                permute(matrix, perm, used, depth + 1, size, det);
+                used[i] = 0;
+            }
         }
     }
-
-	if(depth == 0){
-		// Freeing currentPerm
-		free(currentPerm);
-		currentPerm = NULL;
-	}
 }
 
 /// @brief Calculating Determinant of Rectangle Matrixes
@@ -310,20 +295,28 @@ void GeneratePermutations(COUNTER_TYPE* perm, COUNTER_TYPE* used, COUNTER_TYPE n
 VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size) 
 {
     VALUE_TYPE* determinant = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE));
+	if(!determinant){
+		return NULL;
+	}
+	*determinant = 0;
     COUNTER_TYPE* perm = (COUNTER_TYPE*)malloc(size * sizeof(COUNTER_TYPE));
+	if(!perm){
+		free(determinant);
+		return NULL;
+	}
     COUNTER_TYPE* used = (COUNTER_TYPE*)calloc(size, sizeof(COUNTER_TYPE));
+	if(!used){
+		free(determinant);
+		free(perm);
+		return NULL;
+	}
 
-	COUNTER_TYPE i; //Pre-initialize for variables because before C99 you can't use for initializers
-    for (i = 0; i < size; i++) 
-	{
-        perm[i] = i;
-    }
+    permute(matrix, perm, used, 0, size, determinant);
 
-    GeneratePermutations(perm, used, size, 0, matrix, determinant);
-
-    free(perm);
+	free(perm);
     free(used);
-    return determinant;
+
+	return determinant;
 }
 #elif DETERMINANT_ALG == 3
 /// @brief Swapping Rows
@@ -349,8 +342,17 @@ void SwapRows(VALUE_TYPE* matrix, COUNTER_TYPE size, COUNTER_TYPE row1, COUNTER_
 VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size) 
 {
     VALUE_TYPE* determinant = (VALUE_TYPE*)malloc(sizeof(VALUE_TYPE));
+	if(!determinant){
+		return NULL;
+	}
 	*determinant = 1;
+
     VALUE_TYPE* tempMatrix = (VALUE_TYPE*)malloc(size * size * sizeof(VALUE_TYPE));
+	if (!tempMatrix)
+    {
+        free(determinant);
+        return NULL;
+    }
 
     // Copying original matrix
 	COUNTER_TYPE i; //Pre-initialize for variables because before C99 you can't use for initializers
@@ -364,11 +366,12 @@ VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size)
 	{
         // Find the Maximum Absolute Value and Change the Row
         COUNTER_TYPE maxRow = k;
-        for (COUNTER_TYPE i = k + 1; i < size; i++) 
+		COUNTER_TYPE j;
+        for (j = k + 1; j < size; j++) 
 		{
-            if (fabs(tempMatrix[i * size + k]) > fabs(tempMatrix[maxRow * size + k])) 
+            if (fabs(tempMatrix[j * size + k]) > fabs(tempMatrix[maxRow * size + k])) 
 			{
-                maxRow = i;
+                maxRow = j;
             }
         }
         if (maxRow != k) 
@@ -377,7 +380,6 @@ VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size)
             *determinant *= -1; // Changing row will change sign
         }
 
-		/*
 		// If main element is zero determinant is zero
         if (tempMatrix[k * size + k] == 0) 
 		{
@@ -385,16 +387,16 @@ VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size)
 			*determinant = 0;
             return determinant;
         }
-		*/
 
         // Update sub rows
-        for (i = k + 1; i < size; i++) 
+		COUNTER_TYPE x;
+        for (x = k + 1; x < size; x++) 
 		{
-            VALUE_TYPE factor = tempMatrix[i * size + k] / tempMatrix[k * size + k];
-            COUNTER_TYPE j; //Pre-initialize for variables because before C99 you can't use for initializers
-			for (j = k; j < size; j++) 
+            VALUE_TYPE factor = tempMatrix[x * size + k] / tempMatrix[k * size + k];
+            COUNTER_TYPE y; //Pre-initialize for variables because before C99 you can't use for initializers
+			for (y = k; y < size; y++) 
 			{
-                tempMatrix[i * size + j] -= factor * tempMatrix[k * size + j];
+                tempMatrix[x * size + y] -= factor * tempMatrix[k * size + y];
             }
         }
     }
@@ -402,10 +404,7 @@ VALUE_TYPE* DeterminateRectangleMatrix(VALUE_TYPE* matrix, COUNTER_TYPE size)
     // Main Diagonal Product - Determinant
     for (i = 0; i < size; i++) 
 	{
-		if(tempMatrix[i * size + i] != 0)
-		{
-        	*determinant *= tempMatrix[i * size + i];
-		}
+		*determinant *= tempMatrix[i * size + i];
     }
 
     free(tempMatrix);
@@ -436,6 +435,8 @@ VALUE_TYPE* DeterminateMatrix(VALUE_TYPE* matrix, COUNTER_TYPE row, COUNTER_TYPE
 /// @return Exit Code, 0 for succesfull 
 int main()
 {
+	PrintAlgorithm();
+
 	while(1 == 1) //Infinite Loop, before C99 there is no bool definition so condition used
 	{
 		COUNTER_TYPE row = GetCounterInput("Input Row Count: ");
@@ -450,6 +451,10 @@ int main()
 		*/
 
 		VALUE_TYPE* matrix = AllocateMatrix(row, column);
+		if(matrix == NULL){
+			printf("Allocation Error Accoured");
+			printf(NewLineSpecifier);
+		}
 		
 		ScanMatrix(matrix, row, column);
 		
@@ -472,13 +477,26 @@ int main()
 		{
 			printf("Matrix Determinant Calculation not finished succesfully, error accoured");
 			printf(NewLineSpecifier);
-			continue;
+		}
+		else{
+			printf("Determinant of the matrix is ");
+			printf(VALUE_TYPE_SPECIFIER, *determinant);
+			printf(NewLineSpecifier);
+
+			free(determinant); //We don't need it more
 		}
 
-		printf("Determinant of the matrix is ");
-		printf(VALUE_TYPE_SPECIFIER, *determinant);
-		printf(NewLineSpecifier);
+		int point;
+		printf("Do you want to continue (1) or exit (0 or any other value): ");
 
-		free(determinant); //We don't need it more
+		#if defined(USE_SCANF_S)
+		scanf_s("%d",&point);
+		#else
+		scanf("%d", &point;
+		#endif
+
+		if(point != 1){
+			break;
+		}
 	}
 }
