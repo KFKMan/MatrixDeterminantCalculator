@@ -1,3 +1,5 @@
+[![Build](https://github.com/KFKMan/MatrixDeterminantCalculator/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/KFKMan/MatrixDeterminantCalculator/actions/workflows/cmake-multi-platform.yml)
+
 İstanbul Gelişim University Computer Engineering First Year First Semester Final Project.
 
 It's a user-given 2D Matrix Determinant Calculator in C with C90 support.
