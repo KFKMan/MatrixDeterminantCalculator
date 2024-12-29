@@ -4,7 +4,7 @@
 ///We don't use scanf for characters/strings/arrays so it's really don't matter.
 #define USE_SCANF_S
 
-#define VALUE_TYPE double
+#define VALUE_TYPE int
 #define VALUE_TYPE_SPECIFIER "%lf"
 #define COUNTER_TYPE int
 #define COUNTER_TYPE_SPECIFIER "%d"
@@ -12,7 +12,7 @@
 ///1 for Laplace Expansion
 ///2 for Leibniz Formula
 ///3 for Gaussian Elimination (there is a divide operation because of that you need to use floating types like double, float etc.)
-#define DETERMINANT_ALG 2
+#define DETERMINANT_ALG 1
 
 ///0 for False
 ///1 for True
@@ -98,7 +98,7 @@ COUNTER_TYPE GetCounterInput(char* question)
 /// @brief Allocating VALUE_TYPE Array which represented as Matrix
 /// @param row Row Count of the Matrix which is wanted to allocate
 /// @param column Column Count of the Matrix which is wanted to allocate
-/// @return VALUE_TYPE Array as pointer
+/// @return VALUE_TYPE Array as or NULL if error accoured
 VALUE_TYPE* AllocateMatrix(COUNTER_TYPE row, COUNTER_TYPE column)
 {
     //It's getting space according to (element count * element size)
@@ -159,9 +159,9 @@ void PrintMatrix(VALUE_TYPE* matrix, COUNTER_TYPE row, COUNTER_TYPE column)
 /// @brief Fill Sub Rectangle Matrix according to Main Rectangle Matrix
 /// @param matrix Main Matrix
 /// @param subMatrix Allocated Sub Matrix which wanted too filled up
-/// @param size Size Of The Matrix
-/// @param excludeRow Excluded Row (from 0)
-/// @param excludeCol Excluded Column (from 0)
+/// @param size Size Of The Matrix N for NxN Matrix
+/// @param excludeRow Excluded Row Index (start from 0)
+/// @param excludeCol Excluded Column Index (start from 0)
 void GetSubMatrix(VALUE_TYPE* matrix, VALUE_TYPE* subMatrix, COUNTER_TYPE size, COUNTER_TYPE excludeRow, COUNTER_TYPE excludeCol) 
 {
     COUNTER_TYPE NewSize = size - 1;
@@ -423,7 +423,7 @@ VALUE_TYPE* DeterminateMatrix(VALUE_TYPE* matrix, COUNTER_TYPE row, COUNTER_TYPE
 
 	if(row <= 0)
 	{
-		printf("Matrix can't have negative size.");
+		printf("Matrix can't have negative or zero size.");
 		printf(NewLineSpecifier);
 		return NULL;
 	}
@@ -454,6 +454,7 @@ int main()
 		if(matrix == NULL){
 			printf("Allocation Error Accoured");
 			printf(NewLineSpecifier);
+			continue;
 		}
 		
 		ScanMatrix(matrix, row, column);
@@ -499,4 +500,9 @@ int main()
 			break;
 		}
 	}
+
+	printf("Application Closing...");
+	printf(NewLineSpecifier);
+
+	return 0;
 }

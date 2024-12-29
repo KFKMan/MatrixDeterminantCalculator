@@ -1,0 +1,120 @@
+Target of Algorithm: Calculating Determinant of the Matrix until User want to stop.
+START
+// Loop until the user decides to stop
+WHILE (userWantsToContinue) DO
+    // Step 1: Get the size of the matrix from the user
+    matrixSize = getMatrixSizeFromUser()
+    
+    // Step 2: Allocate memory for the matrix based on the size
+    matrix = allocateMemoryForMatrix(matrixSize)
+    
+    // Step 3: Fill the matrix with values provided by the user
+    fillMatrixWithValues(matrix, matrixSize)
+    
+    // Step 4: Print the matrix to the screen
+    print "The filled matrix is: $matrix"
+    
+    // Step 5: Calculate the determinant of the matrix
+    determinant = calculateDeterminant(matrix, matrixSize)
+    
+    // Step 6: Free the memory allocated for the matrix
+    Free matrix from memory
+    
+    // Step 7: Check if the determinant calculation is valid
+    IF (isDeterminantValid(determinant)) THEN
+        // Step 8: Print the determinant result
+        print "Determinant result is $determinant"
+    ELSE
+        // Step 9: Print a warning message if the result is invalid
+        print "Determinant result is not valid."
+    END IF
+    
+    // Step 10: Free the memory allocated for the determinant
+    Free determinant from memory
+    
+    // Step 11: Ask the user if they want to calculate another determinant
+    userWantsToContinue = getRequestFromUserForContinue()
+END WHILE
+END
+
+Function getRequestFromUserForContinue()
+    print "Do you want to continue?"
+    Input res as Bool from User
+    return res
+
+Function getMatrixSizeFromUser()
+    print "Input Size of the Matrix: "
+    Input n as Integer from User
+    return n
+
+Function allocateMemoryForMatrix(n)
+    Allocate Memory size n * sizeof(ValueType) as matrix
+    return matrix
+
+Function fillMatrixWithValues(matrix, n)
+    For i from 0 to n-1
+        For j from 0 to n-1
+            print "Input Value for ($i, $j): "
+            Input entry as Integer from User
+            matrix[i][j] = entry
+
+Function calculateDeterminant(matrix,n)
+    If n <= 0
+        print "Matrix size can't be negative or zero!"
+        return NULL
+    
+    return Determinant(matrix, n)
+
+Function isDeterminantValid(determinant)
+    If determinant == NULL THEN
+        return FALSE
+    END IF
+    return TRUE
+
+// Function: Determinant
+// This function calculates the determinant of a given matrix using Cofactor Expansion method.
+Function Determinant(matrix,n)
+    // If the matrix is 1x1, simply return that single element as the determinant
+    If n == 1 THEN
+        Return matrix[0][0]  // Determinant of a 1x1 matrix is just the single element.
+
+    // If the matrix is 2x2, apply the determinant formula directly
+    Else If n == 2
+        // Determinant of a 2x2 matrix: ad - bc
+        Return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+
+    // For larger matrices, use Cofactor Expansion method to calculate the determinant
+    Else
+        determinant = 0  // Initialize determinant to zero
+        // Loop through each element in the first row
+        For i from 0 to n-1
+            // For each element, calculate its cofactor and multiply by the corresponding element
+            cofactor = (-1) ^ i * matrix[0][i] * Determinant(GetCofactor(matrix, 0, i, n), n-1)
+            
+            // Add the cofactor to the determinant
+            determinant = determinant + cofactor
+        End For
+        // Return the computed determinant
+        Return determinant
+End Function
+
+// Function: GetCofactor
+// This function returns the submatrix excluding the specified row and column (the cofactor matrix).
+Function GetCofactor(matrix, row, col, n)    
+    // Create a new matrix of size (n-1) x (n-1)
+    cofactorMatrix = new matrix of size (n-1) x (n-1)
+    
+    // Loop through all elements of the matrix
+    For i from 0 to n-1 expect row
+        For j from 0 to n-1 expect col
+            // If the current element is not in the excluded row or column, include it in the submatrix
+            If i != row and j != col
+                // Copy the element to the new cofactor matrix
+                cofactorMatrix[newRow][newCol] = matrix[i][j]
+            End If
+        End For
+    End For
+    // Return the cofactor matrix
+    Return cofactorMatrix
+End Function
+
