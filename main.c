@@ -4,7 +4,7 @@
 ///We don't use scanf for characters/strings/arrays so it's really don't matter.
 #define USE_SCANF_S
 
-#define VALUE_TYPE int
+#define VALUE_TYPE double
 #define VALUE_TYPE_SPECIFIER "%lf"
 #define COUNTER_TYPE int
 #define COUNTER_TYPE_SPECIFIER "%d"
@@ -20,12 +20,25 @@
 
 #define USE_STOPWATCH 1
 
+#if defined(_MSC_VER) && _MSC_VER > 1400
+#define MSC_SECURE
+#endif
+
+#if defined(USE_SCANF_S) && !defined(MSC_SECURE)
+#define __STDC_WANT_LIB_EXT1__ 1
+#endif
+
 #if USE_STOPWATCH == 1
 #include <time.h>
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
+
+
+#if defined(USE_SCANF_S) && !defined(__STDC_LIB_EXT1__ ) && !defined(MSC_SECURE)
+#undef USE_SCANF_S
+#endif
 
 const int Algorithm = DETERMINANT_ALG;
 
@@ -493,7 +506,7 @@ int main()
 		#if defined(USE_SCANF_S)
 		scanf_s("%d",&point);
 		#else
-		scanf("%d", &point;
+		scanf("%d", &point);
 		#endif
 
 		if(point != 1){
