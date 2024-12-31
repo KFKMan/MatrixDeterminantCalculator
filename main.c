@@ -40,22 +40,18 @@
 #undef USE_SCANF_S
 #endif
 
-const int Algorithm = DETERMINANT_ALG;
-
 void PrintAlgorithm(){
-	if(Algorithm == 1){
-		printf("Selected Algorithm is Laplace Expansion \n");
-	}
-	else if(Algorithm == 2){
-		printf("Selected Algorithm is Leibniz Formula \n");
-	}
-	else if (Algorithm == 3)
-	{
-		printf("Selected Algorithm is Gaussian Elimination \n");
-	}
-	else{
-		printf("Unknow Algorithm Detected \n");
-	}
+	#if DETERMINANT_ALG == 1
+	printf("Selected Algorithm is Laplace Expansion");
+	#elif DETERMINANT_ALG == 2
+	printf("Selected Algorithm is Leibniz Formula");
+	#elif DETERMINANT_ALG == 3
+	printf("Selected Algorithm is Gaussian Elimination");
+	#else
+	printf("Unknow Algorithm Detected");
+	#endif
+
+	printf(NewLineSpecifier);
 }
 
 #if DETERMINANT_ALG == 3
