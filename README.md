@@ -17,3 +17,14 @@ As default there is a CMake configuration providen but you don't limited to use 
 1- Install CMake: You can install it from (cmake.org)
 
 2- Install Supported CMake Tool like Ninja (ninja-build.org) and configure it: For Ninja there's two option you have you can install pre-compiled binary and add it to CMake Path or you can build from source (you can use install-ninja-source.bat, note: install-ninja-source.bat need git).
+
+**Contributors**
+\
+[@KFKMan](https://github.com/KFKMan) (Kaan Faruk Kınalı)
+\
+[@leokerem7](https://github.com/leokerem7) (Mehmet Kerem Aslan)
+\
+[@EmirageCS](https://github.com/EmirageCS) (Emirhan Uçan)
+\
+\
+Big thanks to [@dahmansphi](https://github.com/dahmansphi) (Deniz Dahman)
